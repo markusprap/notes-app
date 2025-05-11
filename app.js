@@ -3,6 +3,8 @@ import { notesData } from './src/data/data.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const notesContainer = document.getElementById('notes-container');
+    const modal = document.querySelector('note-modal'); // Ambil elemen modal
+    const newNoteButton = document.querySelector('new-note-button'); // Ambil tombol "New Note"
 
     function renderNotes() {
         notesContainer.innerHTML = '';
