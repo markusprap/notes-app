@@ -1,19 +1,37 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Notes App</title>
-
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+  </head>
+  <body>
     <div class="container">
-        <app-header></app-header>
-        <div id="notes-container" class="notes-grid"></div>
-        <note-modal></note-modal>
-    </div>
+      <app-header></app-header>
 
-    <script type="module" src="./app.js"></script>
-</body>
+      <div class="tab-navigation">
+        <button class="tab-btn active" data-tab="active">
+          <i class="fas fa-sticky-note"></i> Active Notes
+        </button>
+        <button class="tab-btn" data-tab="archived">
+          <i class="fas fa-archive"></i> Archived Notes
+        </button>
+      </div>
+
+      <div class="tab-content">
+        <div class="tab-panel active" id="active-panel">
+          <div id="notes-active" class="notes-grid"></div>
+        </div>
+        <div class="tab-panel" id="archived-panel">
+          <div id="notes-archived" class="notes-grid"></div>
+        </div>
+      </div>
+
+      <note-modal modal-title="Tambah Catatan Baru"></note-modal>
+    </div>
+  </body>
 </html>

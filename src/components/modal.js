@@ -1,150 +1,105 @@
+import { modalTemplate } from './modal.template.js';
+
 class NoteModal extends HTMLElement {
-    constructor() {
-        super();
-        this.attachShadow({ mode: 'open' });
-        this.shadowRoot.innerHTML = `
-            <style>
-                .modal {
-                    display: none;
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background-color: rgba(0, 0, 0, 0.5);
-                    z-index: 1000;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                }
-                .modal-content {
-                    background-color: white;
-                    margin: auto;
-                    width: 90%;
-                    max-width: 600px;
-                    border-radius: 8px;
-                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-                    overflow: hidden;
-                }
-                .modal-header {
-                    padding: 16px;
-                    border-bottom: 1px solid #eee;
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                }
-                .modal-body {
-                    padding: 16px;
-                }
-                #note-title, #note-content {
-                    width: 100%;
-                    max-width: 100%;
-                    box-sizing: border-box;
-                    padding: 12px;
-                    margin-bottom: 12px;
-                    border: 1px solid #ddd;
-                    border-radius: 4px;
-                }
-                #note-content {
-                    height: 200px;
-                }
-                .modal-footer {
-                    padding: 16px;
-                    text-align: right;
-                }
-                .btn-primary {
-                    background-color: #000;
-                    color: white;
-                    padding: 8px 16px;
-                    border: none;
-                    border-radius: 4px;
-                    cursor: pointer;
-                }
-                .btn-primary:hover {
-                    background-color: #333;
-                }
-                .error {
-                    color: red;
-                    font-size: 14px;
-                    margin-top: -10px;
-                    margin-bottom: 10px;
-                }
-            </style>
-            <div class="modal">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h2 id="modal-title">Create a new note</h2>
-                        <button class="close-btn">X</button>
-                    </div>
-                    <div class="modal-body">
-                        <input id="note-title" type="text" placeholder="Enter note title" />
-                        <div id="title-error" class="error" style="display: none;">Title is required.</div>
-                        <textarea id="note-content" placeholder="What's on your mind?"></textarea>
-                        <div id="content-error" class="error" style="display: none;">Content is required.</div>
-                    </div>
-                    <div class="modal-footer">
-                        <button class="btn-primary" id="save-note">Save Note</button>
-                    </div>
-                </div>
-            </div>
+  static get observedAttributes() {
+    return ['modal-title'];
+  }
+
+  constructor() {
+    super();
+    this._shadowRoot = this.attachShadow({ mode: 'open' });
+  }
+
+  connectedCallback() {
+    this.render();
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === 'modal-title' && this._shadowRoot) {
+      const titleEl = this._shadowRoot.querySelector('#modal-title');
+      if (titleEl) titleEl.textContent = newValue;
+    }
+  }
+
+  render() {
+    this._shadowRoot.innerHTML = `
+            <link rel="stylesheet" href="/styles/style.css">
+            ${modalTemplate}
         `;
 
-        this.shadowRoot.querySelector('.close-btn').addEventListener('click', () => this.hide());
-        this.shadowRoot.querySelector('#save-note').addEventListener('click', () => this.saveNote());
-    }
+    const modalTitle = this.getAttribute('modal-title') || 'Create a new note';
+    this._shadowRoot.querySelector('#modal-title').textContent = modalTitle;
 
-    show(title = '', content = '') {
-        this.shadowRoot.querySelector('#note-title').value = title;
-        this.shadowRoot.querySelector('#note-content').value = content;
-        this.shadowRoot.querySelector('.modal').style.display = 'flex';
-        this.clearErrors();
-    }
+    const saveBtn = this._shadowRoot.querySelector('#save-note');
+    const titleInput = this._shadowRoot.querySelector('#note-title');
+    const contentInput = this._shadowRoot.querySelector('#note-content');
+    const titleError = this._shadowRoot.querySelector('#title-error');
+    const contentError = this._shadowRoot.querySelector('#content-error');
 
-    hide() {
-        this.shadowRoot.querySelector('.modal').style.display = 'none';
-    }
+    const updateSaveButtonState = () => {
+      const isTitleValid = titleInput.value.trim().length > 0;
+      const isContentValid = contentInput.value.trim().length > 0;
+      saveBtn.disabled = !(isTitleValid && isContentValid);
+    };
 
-    clearErrors() {
-        this.shadowRoot.querySelector('#title-error').style.display = 'none';
-        this.shadowRoot.querySelector('#content-error').style.display = 'none';
-    }
+    titleInput.addEventListener('input', e => {
+      const value = e.target.value.trim();
+      if (!value) {
+        titleError.style.display = 'block';
+      } else {
+        titleError.style.display = 'none';
+      }
+      updateSaveButtonState();
+    });
 
-    validateInputs(title, content) {
-        let isValid = true;
+    contentInput.addEventListener('input', e => {
+      const value = e.target.value.trim();
+      if (!value) {
+        contentError.style.display = 'block';
+      } else {
+        contentError.style.display = 'none';
+      }
+      updateSaveButtonState();
+    });
 
-        if (!title) {
-            this.shadowRoot.querySelector('#title-error').style.display = 'block';
-            isValid = false;
-        } else {
-            this.shadowRoot.querySelector('#title-error').style.display = 'none';
-        }
+    updateSaveButtonState();
 
-        if (!content) {
-            this.shadowRoot.querySelector('#content-error').style.display = 'block';
-            isValid = false;
-        } else {
-            this.shadowRoot.querySelector('#content-error').style.display = 'none';
-        }
+    this._shadowRoot
+      .querySelector('.close-btn')
+      .addEventListener('click', () => this.hide());
+    saveBtn.addEventListener('click', () => this.saveNote());
+  }
 
-        return isValid;
-    }
+  show(title = '', content = '') {
+    this._shadowRoot.querySelector('#note-title').value = title;
+    this._shadowRoot.querySelector('#note-content').value = content;
+    this._shadowRoot.querySelector('.modal').style.display = 'flex';
+    this.clearErrors();
+    this._shadowRoot.querySelector('#save-note').disabled = !(title && content);
+  }
 
-    saveNote() {
-        const title = this.shadowRoot.querySelector('#note-title').value.trim();
-        const content = this.shadowRoot.querySelector('#note-content').value.trim();
+  hide() {
+    this._shadowRoot.querySelector('.modal').style.display = 'none';
+  }
 
-        if (!this.validateInputs(title, content)) {
-            return;
-        }
+  clearErrors() {
+    this._shadowRoot.querySelector('#title-error').style.display = 'none';
+    this._shadowRoot.querySelector('#content-error').style.display = 'none';
+  }
 
-        const event = new CustomEvent('save-note', {
-            detail: { title, content },
-            bubbles: true,
-            composed: true,
-        });
-        this.dispatchEvent(event);
-        this.hide();
-    }
+  saveNote() {
+    const title = this._shadowRoot.querySelector('#note-title').value.trim();
+    const content = this._shadowRoot
+      .querySelector('#note-content')
+      .value.trim();
+    const event = new CustomEvent('save-note', {
+      detail: { title, content },
+      bubbles: true,
+      composed: true,
+    });
+    this.dispatchEvent(event);
+    this.hide();
+  }
 }
 
 customElements.define('note-modal', NoteModal);
