@@ -1,7 +1,5 @@
 ## Checklist Pemenuhan Kriteria Submission
 
-Berikut adalah checklist untuk memastikan seluruh kriteria proyek telah terpenuhi:
-
 ### Kriteria Wajib
 
 - [x] **Kriteria Wajib 1:** Proyek masih memenuhi seluruh kriteria dari submission sebelumnya.
